@@ -11,6 +11,7 @@ import urllib
 import re
 import xml.etree.ElementTree as ET
 import time
+import sys
 #import subprocess
 
 url = "http://ia801502.us.archive.org/6/items/MIT6.006F11/"
@@ -47,7 +48,7 @@ for item in root:
         print item.get('name')
         dllist.append(item.get("name"))
 
-print dllist
+#print dllist
         #print item.get("name")
     #print item.tag, item.get('name')
     #print type(item.get('name'))
@@ -55,12 +56,20 @@ print dllist
     #for child in item.iter():
         #print child.tag, child.attrib, child.text
 
+
+def dlProgress(count, block_size, total_size):
+    progress_size = int(count * block_size / (1024 * 1024))
+    percent = int(count * block_size * 100 / total_size)
+
+    sys.stdout.write("\r...Complete: %d%%, %d MB" % (percent, progress_size))
+    sys.stdout.flush()
+
 while dllist:
     for item in dllist:
         try:
-            print "Try downloading %s." % (item)
-            urllib.urlretrieve(url + item, item)
-            print "Remove %s from dllist." % (item)
+            print "Try downloading %s." % (item),
+            urllib.urlretrieve(url + item, item, reporthook=dlProgress)
+            print "Done. Remove %s from dllist." % (item)
             dllist.remove(item)
         except:
             print "Fail to down %s, will try again later." % (item)
