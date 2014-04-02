@@ -14,47 +14,35 @@ import time
 import sys
 #import subprocess
 
-url = "http://ia801502.us.archive.org/6/items/MIT6.006F11/"
 
-#url = 'http://ia600401.us.archive.org/8/items/MIT_Structure_of_Computer_Programs_1986/'
+class Downloader(object):
+    def __init__(self, url):
+        self.url = url
+        self.dllist = []
+        self.xmlurl = ''
 
-req = urllib2.Request(url, headers={'User-Agent': "Magic Browser"})
-resp = urllib2.urlopen(req)
-respHTML = resp.read()
+    def parseHtml(self):
+        req = urllib2.Request(self.url, headers={'User-Agent':
+                                                 "Magic Browser"})
+        resp = urllib2.urlopen(req)
+        respHTML = resp.read()
 
-soup = BeautifulSoup(respHTML)
+        soup = BeautifulSoup(respHTML)
 
-#for tag in soup.find_all('a',text=re.compile("lec.*mp4")):
-    #print tag
+        for tag in soup.find_all("a", text=re.compile("(?<!meta)\.xml")):
+            self.xmlurl = tag.get("href")
 
-for tag in soup.find_all("a", text=re.compile("(?<!meta)\.xml")):
-    xmlurl = tag.get("href")
+    def parseXml(self):
+        req = urllib2.Request(self.url + self.xmlurl,
+                              headers={'User-Agent': "Magic Browser"})
+        resp = urllib2.urlopen(req)
+        respxml = resp.read()
 
-#print xmlurl
+        root = ET.fromstring(respxml)
 
-req = urllib2.Request(url + xmlurl, headers={'User-Agent': "Magic Browser"})
-resp = urllib2.urlopen(req)
-respxml = resp.read()
-
-#print type(respxml)
-
-root = ET.fromstring(respxml)
-
-dllist = []
-for item in root:
-    if re.search("lec.*mp4", item.get('name')):
-        #print item.get('name')
-#    if re.match("mp4", item.get('name')):
-        print item.get('name')
-        dllist.append(item.get("name"))
-
-#print dllist
-        #print item.get("name")
-    #print item.tag, item.get('name')
-    #print type(item.get('name'))
-    #print type(child)
-    #for child in item.iter():
-        #print child.tag, child.attrib, child.text
+        for item in root:
+            if re.search("lec.*mp4", item.get('name')):
+                self.dllist.append(item.get("name"))
 
 
 def dlProgress(count, block_size, total_size):
@@ -64,17 +52,22 @@ def dlProgress(count, block_size, total_size):
     sys.stdout.write("\r...Complete: %d%%, %d MB" % (percent, progress_size))
     sys.stdout.flush()
 
-while dllist:
-    for item in dllist:
-        try:
-            print "Try downloading %s." % (item),
-            urllib.urlretrieve(url + item, item, reporthook=dlProgress)
-            print "Done. Remove %s from dllist." % (item)
-            dllist.remove(item)
-        except:
-            print "Fail to down %s, will try again later." % (item)
+if __name__ == "__main__":
+    mit = Downloader("http://ia801502.us.archive.org/6/items/MIT6.006F11/")
+    mit.parseHtml()
+    mit.parseXml()
 
-    print "Will sleep for half an hour, will try to download then."
-    time.sleep(1800)
-    #print "Pop test[0]: ", test[0]
-    #test.pop(0)
+    while mit.dllist:
+        for item in mit.dllist:
+            try:
+                print "Try to download %s." % (item)
+                urllib.urlretrieve(mit.url + item, item, reporthook=dlProgress)
+                print "Done. Remove %s from dllist." % (item)
+                mit.dllist.remove(item)
+            except:
+                print "Fail to down %s, will try again later." % (item)
+
+        print "Will sleep for half an hour, will try to download then."
+        time.sleep(1800)
+
+#"http://ia801502.us.archive.org/6/items/MIT6.006F11/"
