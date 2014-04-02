@@ -7,13 +7,15 @@ mit的课程都放在Internet Archive上，每个课程有一个资源列表，�
 
 from bs4 import BeautifulSoup
 import urllib2
+import urllib
 import re
 import xml.etree.ElementTree as ET
+import time
 #import subprocess
 
-#url = "http://ia801502.us.archive.org/6/items/MIT6.006F11/"
+url = "http://ia801502.us.archive.org/6/items/MIT6.006F11/"
 
-url = 'http://ia600401.us.archive.org/8/items/MIT_Structure_of_Computer_Programs_1986/'
+#url = 'http://ia600401.us.archive.org/8/items/MIT_Structure_of_Computer_Programs_1986/'
 
 req = urllib2.Request(url, headers={'User-Agent': "Magic Browser"})
 resp = urllib2.urlopen(req)
@@ -27,6 +29,8 @@ soup = BeautifulSoup(respHTML)
 for tag in soup.find_all("a", text=re.compile("(?<!meta)\.xml")):
     xmlurl = tag.get("href")
 
+#print xmlurl
+
 req = urllib2.Request(url + xmlurl, headers={'User-Agent': "Magic Browser"})
 resp = urllib2.urlopen(req)
 respxml = resp.read()
@@ -37,7 +41,10 @@ root = ET.fromstring(respxml)
 
 dllist = []
 for item in root:
-    if re.match("lec.*mp4", item.get('name')):
+    if re.search("lec.*mp4", item.get('name')):
+        #print item.get('name')
+#    if re.match("mp4", item.get('name')):
+        print item.get('name')
         dllist.append(item.get("name"))
 
 print dllist
@@ -47,3 +54,18 @@ print dllist
     #print type(child)
     #for child in item.iter():
         #print child.tag, child.attrib, child.text
+
+while dllist:
+    for item in dllist:
+        try:
+            print "Try downloading %s." % (item)
+            urllib.urlretrieve(url + item, item)
+            print "Remove %s from dllist." % (item)
+            dllist.remove(item)
+        except:
+            print "Fail to down %s, will try again later." % (item)
+
+    print "Will sleep for half an hour, will try to download then."
+    time.sleep(1800)
+    #print "Pop test[0]: ", test[0]
+    #test.pop(0)
