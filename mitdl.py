@@ -91,7 +91,7 @@ class Downloader(object):
                     print e
                     print "\nFail to down %s." % (self.item)
 
-            if not self.dllist:
+            if self.dllist:
                 print "Will sleep for half an hour, will try to download then."
                 time.sleep(1800)
             else:
