@@ -64,8 +64,9 @@ class Downloader(object):
                     print e
                     print "\nFail to down %s." % (self.item)
 
-            print "Will sleep for half an hour, will try to download then."
-            time.sleep(1800)
+            if not self.dllist:
+                print "Will sleep for half an hour, will try to download then."
+                time.sleep(1800)
 
     def dlProgress(self, count, block_size, total_size):
         progress_size = int(count * block_size / (1024 * 1024))
