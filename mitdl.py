@@ -12,6 +12,7 @@ import re
 import xml.etree.ElementTree as ET
 import time
 import sys
+import os.path
 #import subprocess
 
 
@@ -44,8 +45,10 @@ class Downloader(object):
         root = ET.fromstring(respxml)
 
         for item in root:
-            if re.search("lec.*mp4", item.get('name')):
-                self.dllist.append(item.get("name"))
+            name = item.get("name")
+            if re.search("lec.*mp4", name):
+                if not os.path.isfile(name):
+                    self.dllist.append(name)
 
     def dowload(self):
 
