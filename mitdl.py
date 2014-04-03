@@ -44,30 +44,34 @@ class Downloader(object):
             if re.search("lec.*mp4", item.get('name')):
                 self.dllist.append(item.get("name"))
 
+    def dowload(self):
 
-def dlProgress(count, block_size, total_size):
-    progress_size = int(count * block_size / (1024 * 1024))
-    percent = int(count * block_size * 100 / total_size)
+        self.parseHtml()
+        self.parseXml()
 
-    sys.stdout.write("\r...Complete: %d%%, %d MB" % (percent, progress_size))
-    sys.stdout.flush()
+        while self.dllist:
+            for item in self.dllist:
+                try:
+                    print "Try to download %s." % (item)
+                    urllib.urlretrieve(self.url + item, item,
+                                       reporthook=self.dlProgress)
+                    print "Done. Remove %s from dllist." % (item)
+                    self.dllist.remove(item)
+                except:
+                    print "Fail to down %s, will try again later." % (item)
+
+            print "Will sleep for half an hour, will try to download then."
+            time.sleep(1800)
+
+    def dlProgress(self, count, block_size, total_size):
+        progress_size = int(count * block_size / (1024 * 1024))
+        percent = int(count * block_size * 100 / total_size)
+
+        sys.stdout.write("\r...Complete: %d%%, %d MB"
+                         % (percent, progress_size))
+        sys.stdout.flush()
 
 if __name__ == "__main__":
     mit = Downloader("http://ia801502.us.archive.org/6/items/MIT6.006F11/")
-    mit.parseHtml()
-    mit.parseXml()
-
-    while mit.dllist:
-        for item in mit.dllist:
-            try:
-                print "Try to download %s." % (item)
-                urllib.urlretrieve(mit.url + item, item, reporthook=dlProgress)
-                print "Done. Remove %s from dllist." % (item)
-                mit.dllist.remove(item)
-            except:
-                print "Fail to down %s, will try again later." % (item)
-
-        print "Will sleep for half an hour, will try to download then."
-        time.sleep(1800)
-
+    mit.dowload()
 #"http://ia801502.us.archive.org/6/items/MIT6.006F11/"
