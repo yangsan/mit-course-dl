@@ -94,6 +94,8 @@ class Downloader(object):
             if not self.dllist:
                 print "Will sleep for half an hour, will try to download then."
                 time.sleep(1800)
+            else:
+                print "Finishing downloading all."
 
     def dlProgress(self, count, block_size, total_size):
         """
