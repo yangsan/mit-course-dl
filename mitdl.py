@@ -21,6 +21,8 @@ class Downloader(object):
         self.dllist = []
         self.xmlurl = ''
         self.item = ''
+        self.time = time.time()
+        self.speed = 0
 
     def parseHtml(self):
         req = urllib2.Request(self.url, headers={'User-Agent':
@@ -56,11 +58,11 @@ class Downloader(object):
                     print "Try to download %s." % (self.item)
                     urllib.urlretrieve(self.url + self.item, self.item,
                                        reporthook=self.dlProgress)
-                    print "Done. Remove %s from dllist." % (self.item)
+                    print "\nDone. Remove %s from dllist." % (self.item)
                     self.dllist.remove(self.item)
-                except:
-                    print "Fail to down %s, \
-                            will try again later." % (self.item)
+                except Exception as e:
+                    print e
+                    print "\nFail to down %s." % (self.item)
 
             print "Will sleep for half an hour, will try to download then."
             time.sleep(1800)
@@ -68,9 +70,13 @@ class Downloader(object):
     def dlProgress(self, count, block_size, total_size):
         progress_size = int(count * block_size / (1024 * 1024))
         percent = int(count * block_size * 100 / total_size)
+        #print count
+        if count % 50 == 0:
+            self.speed = int(50 * block_size / (1024 * (time.time() - self.time)))
+            self.time = time.time()
 
-        sys.stdout.write("\rTry downloading %s : %d%%, %d MB completed."
-                         % (self.item, percent, progress_size))
+        sys.stdout.write("\rTry downloading %s : %d%%, %d MB, %d KB/s"
+                         % (self.item, percent, progress_size, self.speed))
         sys.stdout.flush()
 
 if __name__ == "__main__":
