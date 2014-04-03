@@ -20,6 +20,7 @@ class Downloader(object):
         self.url = url
         self.dllist = []
         self.xmlurl = ''
+        self.item = ''
 
     def parseHtml(self):
         req = urllib2.Request(self.url, headers={'User-Agent':
@@ -50,15 +51,16 @@ class Downloader(object):
         self.parseXml()
 
         while self.dllist:
-            for item in self.dllist:
+            for self.item in self.dllist:
                 try:
-                    print "Try to download %s." % (item)
-                    urllib.urlretrieve(self.url + item, item,
+                    print "Try to download %s." % (self.item)
+                    urllib.urlretrieve(self.url + self.item, self.item,
                                        reporthook=self.dlProgress)
-                    print "Done. Remove %s from dllist." % (item)
-                    self.dllist.remove(item)
+                    print "Done. Remove %s from dllist." % (self.item)
+                    self.dllist.remove(self.item)
                 except:
-                    print "Fail to down %s, will try again later." % (item)
+                    print "Fail to down %s, \
+                            will try again later." % (self.item)
 
             print "Will sleep for half an hour, will try to download then."
             time.sleep(1800)
@@ -67,11 +69,10 @@ class Downloader(object):
         progress_size = int(count * block_size / (1024 * 1024))
         percent = int(count * block_size * 100 / total_size)
 
-        sys.stdout.write("\r...Complete: %d%%, %d MB"
-                         % (percent, progress_size))
+        sys.stdout.write("\rTry downloading %s : %d%%, %d MB completed."
+                         % (self.item, percent, progress_size))
         sys.stdout.flush()
 
 if __name__ == "__main__":
     mit = Downloader("http://ia801502.us.archive.org/6/items/MIT6.006F11/")
     mit.dowload()
-#"http://ia801502.us.archive.org/6/items/MIT6.006F11/"
